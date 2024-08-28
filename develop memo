@@ -1,0 +1,28 @@
+## 要件
+ユーザーの登録・認証機能は必要です。 ただ、予約を行うuser側は認証せずに予約できるようにしたいです。
+複数のユーザーが予約を共有できるようにしたいです。
+予約の種類はいくつかあり、管理者が後から追加したものの中から選択できるようにしたいです。
+リマインダー機能はとりあえずはなくて大丈夫です。
+モバイルアプリも作る予定はないですが、レスポンシブデザインで開発したいです。
+
+## DB 設計
+ざっくりとした設計。
+- User table(管理者ユーザーのみいる)
+master user id
+email
+password
+calender id
+
+- reservation table(予約自体の詳細)
+reservation id
+reserve type
+description
+start_time
+end_time
+description
+
+- reservation type table(予約タイプの詳細)
+reserve type
+reserve description
+reserve duration - 予約中にかかる時間
+fee - かかる料金
