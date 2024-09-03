@@ -11,7 +11,7 @@
 master user id
 email
 password
-calender id
+reservation id
 
 - reservation table(予約自体の詳細)
 reservation id
@@ -27,7 +27,36 @@ reserve description
 reserve duration - 予約中にかかる時間
 fee - かかる料金
 
+->
+type User struct {
+    ID       int
+    Name     string
+    Email    string
+    Password string
+    Role     string
+}
 
+type ReservationType struct {
+    ID        int
+    Name      string
+    CreatedBy int
+}
+
+type Reservation struct {
+    ID          int
+    Title       string
+    Description string
+    StartTime   time.Time
+    EndTime     time.Time
+    TypeID      string
+    UserID      int
+	Fee 		int
+}
+
+
+
+go では、migration用として、下記を使用。
+go get -u github.com/golang-migrate/migrate/v4/cmd/migrate
 
 
 
@@ -54,3 +83,8 @@ cmd/web/main.goをserver/ディレクトリに配置しない理由は、エン�
 
 この構造に従うことで、アプリケーションの役割が明確になり、コードの保守性と可読性が向上します。
 ```
+
+
+sudo postgresql-setup initdb
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
