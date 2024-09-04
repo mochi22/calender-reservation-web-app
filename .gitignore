@@ -1,0 +1,34 @@
+# OSに関連するファイル
+.DS_Store
+Thumbs.db
+
+# 編集ファイル
+*.swp
+*~
+
+# ログファイル
+*.log
+
+# 依存関係に関するファイル
+node_modules/
+.venv/
+env/
+venv/
+
+# 構築ファイル
+build/
+dist/
+.next/
+
+# キャッシュファイル
+.cache/
+__pycache__/
+*.pyc
+
+# IDE設定ファイル
+.vscode/
+.idea/
+
+# シークレットキー
+secret.key
+*.env
