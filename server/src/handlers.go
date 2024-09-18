@@ -1,10 +1,11 @@
-package calendar
+package main
 
 import (
     "database/sql"
     "net/http"
     "time"
 	"strconv"
+    "log"
 
     "github.com/gin-gonic/gin"
 )
@@ -47,7 +48,7 @@ func CreateEvent(c *gin.Context) {
     }
 
     if err := createEvent(db, &event); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        c.JSON(http.StatusInternalServerError, gin.H{"error createEvent": err.Error()})
         return
     }
 
@@ -55,7 +56,7 @@ func CreateEvent(c *gin.Context) {
 }
 
 func getEvents(db *sql.DB, date time.Time) ([]Event, error) {
-    rows, err := db.Query("SELECT id, title, user, date, hour, created_at, updated_at FROM events WHERE date = $1", date)
+    rows, err := db.Query("SELECT id, title, username, date, hour, created_at, updated_at FROM events WHERE date = $1", date)
     if err != nil {
         return nil, err
     }
@@ -77,9 +78,14 @@ func createEvent(db *sql.DB, event *Event) error {
     event.CreatedAt = time.Now()
     event.UpdatedAt = time.Now()
 
-    _, err := db.Exec("INSERT INTO events (title, user, date, hour, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+    _, err := db.Exec("INSERT INTO events (title, username, date, hour, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
         event.Title, event.User, event.Date, event.Hour, event.CreatedAt, event.UpdatedAt)
 
+    if err != nil {
+        // c.JSON(http.StatusInternalServerError, gin.H{"error when insert": err.Error()})
+        log.Fatal(err)
+        return err
+    }
     return err
 }
 
@@ -137,7 +143,7 @@ func DeleteEvent(c *gin.Context) {
 func updateEvent(db *sql.DB, event *Event) error {
     event.UpdatedAt = time.Now()
 
-    _, err := db.Exec("UPDATE events SET title = $1, user = $2, date = $3, hour = $4, updated_at = $5 WHERE id = $6",
+    _, err := db.Exec("UPDATE events SET title = $1, username = $2, date = $3, hour = $4, updated_at = $5 WHERE id = $6",
         event.Title, event.User, event.Date, event.Hour, event.UpdatedAt, event.ID)
 
     return err
