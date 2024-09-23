@@ -6,6 +6,7 @@ import (
 	// "time"
 
     "github.com/gin-gonic/gin"
+	"github.com/mochi22/calender-reservation-web-app/server/src/db"
 	// "github.com/mochi22/calender-reservation-web-app/server/src"
 )
 
@@ -80,7 +81,7 @@ import (
 
 func main() {
 	// connect to DB
-    db, err := NewDB()
+    db, err := db.NewDB()
     if err != nil {
 		log.Print("connecting DB error!!")
 		log.Fatal(err)

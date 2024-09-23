@@ -1,17 +1,20 @@
 // https://qiita.com/mu_tomoya/items/7545bea039e82e483f9e
 
 // // // Filename - index.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EventForm from '@/components/EventForm';
+import axios from 'axios';
 
 interface Event {
+    id: number;
     title: string;
     date: string;
     hour: string;
     user: string; // ユーザー名の追加
 }
+
 
 const generateHourList = () => {
     const hourList = [];
@@ -24,7 +27,7 @@ const generateHourList = () => {
 
 export default function CalendarGfg() {
     const [value, onChange] = useState<Date>(new Date());
-    const [events, setEvents] = useState<{ [key: string]: Event[] }>({});
+    const [events, setEvents] = useState<Event[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
@@ -46,27 +49,51 @@ export default function CalendarGfg() {
     const tileContent = ({ date, view }: { date: Date; view: string }) => {
         if (view === 'month') {
             const formattedDate = formatDate(date);
-            const eventCount = events[formattedDate]?.length || 0;
+            const eventCount = events.filter(event => event.date === formattedDate).length;
             return eventCount > 0 ? <div>{eventCount}</div> : null;
         }
     };
 
-    const addEvent = (event: Event) => {
-        setEvents((prevEvents) => ({
-            ...prevEvents,
-            [event.date]: [...(prevEvents[event.date] || []), event],
-        }));
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get('/events');
+            setEvents(response.data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
     };
 
-    const editEvent = (event: Event) => {
-        setEvents((prevEvents) => ({
-            ...prevEvents,
-            [event.date]: prevEvents[event.date].map((e) =>
-                e.hour === event.hour ? event : e
-            ),
-        }));
-        setEditingEvent(null);
+    const addEvent = async (event: Event) => {
+        try {
+            await axios.post('/events', event);
+            fetchEvents(); // イベントデータを再取得
+        } catch (error) {
+            console.error('Error adding event:', error);
+        }
     };
+
+    const editEvent = async (event: Event) => {
+        try {
+            await axios.put(`/events/${event.id}`, event);
+            fetchEvents(); // イベントデータを再取得
+            setEditingEvent(null);
+        } catch (error) {
+            console.error('Error editing event:', error);
+        }
+    };
+
+    const deleteEvent = async (eventId: number) => {
+        try {
+            await axios.delete(`/events/${eventId}`);
+            fetchEvents(); // イベントデータを再取得
+        } catch (error) {
+            console.error('Error deleting event:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
 
     return (
         <div className="flex">
@@ -88,20 +115,20 @@ export default function CalendarGfg() {
                                 <li key={hour} className="flex items-center justify-between mb-2">
                                     <span className="font-semibold">{hour}:</span>
                                     <div className="flex-grow flex items-center justify-center">
-                                        {events[formatDate(selectedDate)]?.find(
-                                            (event) => event.hour === hour
+                                        {events.find(
+                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                         ) && (
                                             <div>
-                                                {events[formatDate(selectedDate)]?.find(
-                                                    (event) => event.hour === hour
+                                                {events.find(
+                                                    (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                                 )?.title}{' '}
-                                                ({events[formatDate(selectedDate)]?.find(
-                                                    (event) => event.hour === hour
+                                                ({events.find(
+                                                    (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                                 )?.user || '名無し'})
                                             </div>
                                         )}
-                                        {!events[formatDate(selectedDate)]?.find(
-                                            (event) => event.hour === hour
+                                        {!events.find(
+                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                         ) && (
                                             <div className="flex items-center justify-center">
                                                 <span className="text-gray-500">予定なし</span>
@@ -112,23 +139,37 @@ export default function CalendarGfg() {
                                                 />
                                             </div>
                                         )}
-                                        {events[formatDate(selectedDate)]?.find(
-                                            (event) => event.hour === hour
+                                        {events.find(
+                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                         ) && (
-                                            <button
-                                                className="ml-2 bg-yellow-500 hover:bg-yellow-700 text-white font-semibold py-1 px-2 rounded"
-                                                onClick={() =>
-                                                    setEditingEvent(
-                                                        events[formatDate(selectedDate)]?.find(
-                                                            (event) => event.hour === hour
-                                                        )!
-                                                    )
-                                                }
-                                            >
-                                                編集
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="ml-2 bg-yellow-500 hover:bg-yellow-700 text-white font-semibold py-1 px-2 rounded"
+                                                    onClick={() =>
+                                                        setEditingEvent(
+                                                            events.find(
+                                                                (event) => event.date === formatDate(selectedDate) && event.hour === hour
+                                                            )!
+                                                        )
+                                                    }
+                                                >
+                                                    編集
+                                                </button>
+                                                <button
+                                                    className="ml-2 bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-2 rounded"
+                                                    onClick={() =>
+                                                        deleteEvent(
+                                                            events.find(
+                                                                (event) => event.date === formatDate(selectedDate) && event.hour === hour
+                                                            )!.id
+                                                        )
+                                                    }
+                                                >
+                                                    削除
+                                                </button>
+                                            </>
                                         )}
-                                        {editingEvent?.hour === hour && (
+                                        {editingEvent?.date === formatDate(selectedDate) && editingEvent?.hour === hour && (
                                             <EventForm
                                                 onEditEvent={editEvent}
                                                 selectedHour={hour}
