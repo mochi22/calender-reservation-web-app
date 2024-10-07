@@ -7,12 +7,14 @@ import 'react-calendar/dist/Calendar.css';
 import EventForm from '@/components/EventForm';
 import axios from 'axios';
 
-interface Event {
-    id: number;
+interface EventData {
+    id: string;
     title: string;
+    user: string;
     date: string;
     hour: string;
-    user: string; // ユーザー名の追加
+    createat: string;
+    updateat: string;
 }
 
 
@@ -27,9 +29,9 @@ const generateHourList = () => {
 
 export default function CalendarGfg() {
     const [value, onChange] = useState<Date>(new Date());
-    const [events, setEvents] = useState<Event[]>([]);
+    const [events, setEvents] = useState<EventData[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
 
     const handleClickDay = (value: Date) => {
         setSelectedDate(value);
@@ -54,27 +56,29 @@ export default function CalendarGfg() {
         }
     };
 
+    const root_path = "http://localhost:8080";
+
     const fetchEvents = async () => {
         try {
-            const response = await axios.get('/events');
+            const response = await axios.get("http://localhost:8080/events");
             setEvents(response.data);
         } catch (error) {
             console.error('Error fetching events:', error);
         }
     };
 
-    const addEvent = async (event: Event) => {
+    const addEvent = async (event: EventData) => {
         try {
-            await axios.post('/events', event);
+            await axios.post("http://localhost:8080/events", event);
             fetchEvents(); // イベントデータを再取得
         } catch (error) {
             console.error('Error adding event:', error);
         }
     };
 
-    const editEvent = async (event: Event) => {
+    const editEvent = async (event: EventData) => {
         try {
-            await axios.put(`/events/${event.id}`, event);
+            await axios.put(`${root_path}/events/${event.id}`, event);
             fetchEvents(); // イベントデータを再取得
             setEditingEvent(null);
         } catch (error) {
@@ -84,7 +88,7 @@ export default function CalendarGfg() {
 
     const deleteEvent = async (eventId: number) => {
         try {
-            await axios.delete(`/events/${eventId}`);
+            await axios.delete(`${root_path}/events/${eventId}`);
             fetchEvents(); // イベントデータを再取得
         } catch (error) {
             console.error('Error deleting event:', error);
@@ -108,7 +112,7 @@ export default function CalendarGfg() {
             </div>
             <div className="w-2/3 m-4">
                 {selectedDate && (
-                    <div className="bg-white shadow-md rounded-md p-4">
+                    <div className="bg-green shadow-md rounded-md p-4">
                         <h2 className="text-lg font-bold mb-4">{formatDate(selectedDate)}</h2>
                         <ul>
                             {generateHourList().map((hour) => (

@@ -1,5 +1,6 @@
 // components/EventForm.jsx
 import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface EventFormProps {
     onAddEvent: (event: Event) => void;
@@ -27,7 +28,12 @@ const EventForm: React.FC<EventFormProps> = ({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const event = { title: eventTitle, date: formatDate(selectedDate), hour: selectedHour, user: eventUser }; // ユーザー名を追加
+        const uuid = uuidv4(); // uuidv4関数を使ってIDを生成
+        const time_now = new Date();//.toISOString(); // 現在時刻をISO文字列形式で取得
+        console.log("time_now:", time_now);
+        console.log("selectedDate", selectedDate);
+        const event = {id:uuid, title: eventTitle, username: eventUser, date: selectedDate, createat: time_now, updateat: time_now }; // ユーザー名を追加
+        console.log("kuraryu log event:", event);
         if (editMode && onEditEvent) {
             onEditEvent(event);
         } else {

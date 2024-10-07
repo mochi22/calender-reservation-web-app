@@ -3,11 +3,11 @@ package main
 import "time"
 
 type Event struct {
-    ID        int       `json:"id"`
+    ID        string    `json:"id"`
     Title     string    `json:"title"`
-    User      string    `json:"username"`
+    Username  string    `json:"username"`
     Date      time.Time `json:"date"`
-    Hour      string    `json:"hour"`
+    // Hour      string    `json:"hour"`
     CreatedAt time.Time `json:"created_at"`
     UpdatedAt time.Time `json:"updated_at"`
 }
