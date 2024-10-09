@@ -17,7 +17,7 @@ interface EventData {
     updateat: string;
 }
 
-
+// define hour list from 0 to 24 every 1 hour
 const generateHourList = () => {
     const hourList = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -33,11 +33,14 @@ export default function CalendarGfg() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
 
+    // handle click day in calendar
     const handleClickDay = (value: Date) => {
         setSelectedDate(value);
+        console.log("setSelectedDate value:", value);
         setEditingEvent(null);
     };
 
+    // date formatted
     const formatDate = (date: Date | null) => {
         if (!date) {
             return '';
@@ -48,6 +51,7 @@ export default function CalendarGfg() {
         return `${year}-${month}-${day}`;
     };
 
+    // define tile param in react-calendar
     const tileContent = ({ date, view }: { date: Date; view: string }) => {
         if (view === 'month') {
             const formattedDate = formatDate(date);
@@ -56,12 +60,17 @@ export default function CalendarGfg() {
         }
     };
 
+    // define backend port
     const root_path = "http://localhost:8080";
 
     const fetchEvents = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/events");
-            setEvents(response.data);
+            // get all data from db!
+            const response = await axios.get(`${root_path}/events`);
+            if (response.data != null) {
+                setEvents(response.data); //store all data
+                console.log("res:", response.data);
+            }
         } catch (error) {
             console.error('Error fetching events:', error);
         }
@@ -69,7 +78,8 @@ export default function CalendarGfg() {
 
     const addEvent = async (event: EventData) => {
         try {
-            await axios.post("http://localhost:8080/events", event);
+            //adding reserved data to db
+            await axios.post(`${root_path}/events`, event);
             fetchEvents(); // イベントデータを再取得
         } catch (error) {
             console.error('Error adding event:', error);
@@ -119,18 +129,24 @@ export default function CalendarGfg() {
                                 <li key={hour} className="flex items-center justify-between mb-2">
                                     <span className="font-semibold">{hour}:</span>
                                     <div className="flex-grow flex items-center justify-center">
-                                        {events.find(
-                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
-                                        ) && (
-                                            <div>
-                                                {events.find(
-                                                    (event) => event.date === formatDate(selectedDate) && event.hour === hour
-                                                )?.title}{' '}
-                                                ({events.find(
-                                                    (event) => event.date === formatDate(selectedDate) && event.hour === hour
-                                                )?.user || '名無し'})
-                                            </div>
-                                        )}
+                                        {
+                                            events.find(
+                                                (event) => event.date === formatDate(selectedDate) && event.hour === hour
+                                            ) && (
+                                                <div>
+                                                    {
+                                                        events.find(
+                                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
+                                                        )?.title
+                                                    }{' '}
+                                                    ({
+                                                        events.find(
+                                                            (event) => event.date === formatDate(selectedDate) && event.hour === hour
+                                                        )?.username || '名無し'
+                                                    })
+                                                </div>
+                                            )
+                                        }
                                         {!events.find(
                                             (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                         ) && (

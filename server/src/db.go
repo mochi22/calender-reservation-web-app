@@ -10,6 +10,7 @@ import (
 	"log"
 )
 
+// connecting db function
 func NewDB() (*sql.DB, error) {
     err := godotenv.Load(".env") // .envファイルの読み込み
     if err != nil {
@@ -17,6 +18,7 @@ func NewDB() (*sql.DB, error) {
         return nil, err
     }
 
+    // read db params with .env file
     host := os.Getenv("DB_HOST")
     port, _ := strconv.Atoi(os.Getenv("DB_PORT"))
     username := os.Getenv("DB_USER")
@@ -26,8 +28,7 @@ func NewDB() (*sql.DB, error) {
     psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
         host, port, username, password, dbname)
 
-	// log.Print("psqlInfo:",psqlInfo)
-
+    // connect db
     db, err := sql.Open("postgres", psqlInfo)
     if err != nil {
 		log.Fatal(err)
@@ -36,6 +37,7 @@ func NewDB() (*sql.DB, error) {
 
     err = db.Ping()
     if err != nil {
+        log.Fatal(err)
         return nil, err
     }
 
