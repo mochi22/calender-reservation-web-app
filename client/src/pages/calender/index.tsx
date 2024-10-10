@@ -96,8 +96,9 @@ export default function CalendarGfg() {
         }
     };
 
-    const deleteEvent = async (eventId: number) => {
+    const deleteEvent = async (eventId: string) => {
         try {
+            console.log("deleteEvent id:", eventId);
             await axios.delete(`${root_path}/events/${eventId}`);
             fetchEvents(); // イベントデータを再取得
         } catch (error) {

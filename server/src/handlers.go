@@ -10,27 +10,6 @@ import (
     "github.com/gin-gonic/gin"
 )
 
-// call get "/events" with gin
-func GetEvents(c *gin.Context) {
-    db, err := NewDB()
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        log.Fatal(err)
-        return
-    }
-    defer db.Close()
-
-    events, err := getAllEvents(db)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        log.Fatal(err)
-        return
-    }
-    log.Print("events:", events)
-
-    c.JSON(http.StatusOK, events)
-}
-
 // call post "/events" with gin
 func CreateEvent(c *gin.Context) {
     db, err := NewDB()
@@ -57,6 +36,43 @@ func CreateEvent(c *gin.Context) {
     }
 
     c.JSON(http.StatusCreated, event)
+}
+
+// define the query that create event
+func createEvent(db *sql.DB, event *Event) error {
+    event.CreatedAt = time.Now()
+    event.UpdatedAt = time.Now()
+
+    _, err := db.Exec("INSERT INTO events (id, title, username, date, hour, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        event.ID, event.Title, event.Username, event.Date, event.Hour, event.CreatedAt, event.UpdatedAt)
+
+    if err != nil {
+        // c.JSON(http.StatusInternalServerError, gin.H{"error when insert": err.Error()})
+        log.Fatal(err)
+        return err
+    }
+    return err
+}
+
+// call get "/events" with gin
+func GetEvents(c *gin.Context) {
+    db, err := NewDB()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        log.Fatal(err)
+        return
+    }
+    defer db.Close()
+
+    events, err := getAllEvents(db)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        log.Fatal(err)
+        return
+    }
+    log.Print("events:", events)
+
+    c.JSON(http.StatusOK, events)
 }
 
 // define the query that get events
@@ -99,52 +115,8 @@ func getAllEvents(db *sql.DB) ([]Event, error) {
     return events, nil
 }
 
-// define the query that create event
-func createEvent(db *sql.DB, event *Event) error {
-    event.CreatedAt = time.Now()
-    event.UpdatedAt = time.Now()
-
-    _, err := db.Exec("INSERT INTO events (id, title, username, date, hour, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-        event.ID, event.Title, event.Username, event.Date, event.Hour, event.CreatedAt, event.UpdatedAt)
-
-    if err != nil {
-        // c.JSON(http.StatusInternalServerError, gin.H{"error when insert": err.Error()})
-        log.Fatal(err)
-        return err
-    }
-    return err
-}
-
-// func UpdateEvent(c *gin.Context) {
-//     db, err := NewDB()
-//     if err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//         return
-//     }
-//     defer db.Close()
-
-//     id, err := strconv.Atoi(c.Param("id"))
-//     if err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
-//         return
-//     }
-
-//     var event Event
-//     if err := c.BindJSON(&event); err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-//         return
-//     }
-//     // event.ID = id
-
-//     if err := updateEvent(db, &event); err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//         return
-//     }
-
-//     c.JSON(http.StatusOK, event)
-// }
-
-func DeleteEvent(c *gin.Context) {
+// call put "/events:id" with gin
+func UpdateEvent(c *gin.Context) {
     db, err := NewDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -153,10 +125,53 @@ func DeleteEvent(c *gin.Context) {
     defer db.Close()
 
     id, err := strconv.Atoi(c.Param("id"))
+    log.Print("updateevent id:", id)
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
         return
     }
+
+    var event Event
+    if err := c.BindJSON(&event); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // event.ID = id
+
+    if err := updateEvent(db, &event); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, event)
+}
+
+func updateEvent(db *sql.DB, event *Event) error {
+    event.UpdatedAt = time.Now()
+
+    _, err := db.Exec("UPDATE events SET title = $1, username = $2, date = $3, hour=$4, updated_at = $5 WHERE id = $6",
+        event.Title, event.Username, event.Date, event.Hour, event.UpdatedAt, event.ID)
+
+    return err
+}
+
+// call delete "/events:id" with gin
+func DeleteEvent(c *gin.Context) {
+    db, err := NewDB()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    defer db.Close()
+
+    // id, err := strconv.Atoi(c.Param("id"))
+    // if err != nil {
+    //     log.Fatal(err)
+    //     c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+    //     return
+    // }
+
+    id := c.Param("id")
 
     if err := deleteEvent(db, id); err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -166,16 +181,12 @@ func DeleteEvent(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "Event deleted successfully"})
 }
 
-// func updateEvent(db *sql.DB, event *Event) error {
-//     event.UpdatedAt = time.Now()
-
-//     _, err := db.Exec("UPDATE events SET title = $1, username = $2, date = $3, updated_at = $4 WHERE id = $5",
-//         event.Title, event.Username, event.Date, event.UpdatedAt, event.ID)
-
-//     return err
-// }
-
-func deleteEvent(db *sql.DB, id int) error {
+func deleteEvent(db *sql.DB, id string) error {
     _, err := db.Exec("DELETE FROM events WHERE id = $1", id)
+    if err != nil {
+        log.Print("delete error:", err)
+        log.Fatal(err)
+        return err
+    }
     return err
 }

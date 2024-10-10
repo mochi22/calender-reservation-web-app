@@ -65,6 +65,8 @@ func main() {
 	AllowMethods: []string{
 		"POST",
 		"GET",
+		"PUT",
+		"DELETE",
 		"OPTIONS",
 	},
 	// 許可したいHTTPリクエストヘッダ
