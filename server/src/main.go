@@ -19,20 +19,21 @@ func main() {
     }
     defer db.Close()
 
-	// drop table
+	// // drop table if drop table, rows is defined
 	// rows, err := db.Query("DROP TABLE events")
 	// if err != nil {
-	// 	log.Print("miss create table!!")
+	// 	log.Print("miss drop table!!")
 	// 	log.Fatal(err)
 	// }
 	// defer rows.Close()
 
-	// create table
-	rows, err = db.Query(`CREATE TABLE IF NOT EXISTS events (
+	// create table //TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	rows, err := db.Query(`CREATE TABLE IF NOT EXISTS events (
 			id uuid NOT NULL DEFAULT gen_random_uuid(),
 			title VARCHAR(255) NOT NULL,
 			username VARCHAR(255) NOT NULL,
-			date DATE NOT NULL,
+			date VARCHAR(16) NOT NULL,
+			hour VARCHAR(16) NOT NULL,
 			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);`)
@@ -41,7 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-
 
 	// // usersテーブルからデータを取得
 	// rows, err := db.Query("SELECT * FROM events")
@@ -55,10 +55,6 @@ func main() {
     r := gin.Default()
 
 	// // CORSの設定
-	// config := cors.DefaultConfig()
-	// config.AllowOrigins = []string{"http://localhost:3000"} // TypeScriptアプリケーションのオリジンを指定
-	// r.Use(cors.New(config))
-	// ここからCorsの設定
 	r.Use(cors.New(cors.Config{
 	// アクセスを許可したいアクセス元
 	AllowOrigins: []string{
@@ -94,41 +90,3 @@ func main() {
 
     r.Run(":8080")
 }
-
-// package main
-
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"log"
-// 	"net/http"
-// )
-
-// type user struct {
-// 	ID   int    `json:"id"`
-// 	Name string `json:"name"`
-// 	Password string `json:"password"`
-// 	Calender_ID int `json:"calender_id"`
-// }
-
-// var users = []user{
-// 	{ID: 1, Name: "apple", Password: "pass1", Calender_ID: 10},
-// 	{ID: 2, Name: "banana", Password: "pass22", Calender_ID: 20},
-// 	{ID: 3, Name: "grape", Password: "pass333", Calender_ID: 10},
-// }
-
-
-
-// func getUsers(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
-//     // CORS対応コード, react側がport3000を使用している。
-// 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // 追加
-// 	json.NewEncoder(w).Encode(users)
-// }
-
-// // ※Goではコードの記述順序は関係ないので、上に書いても下に書いても構いません。
-// func main() {
-// 	http.HandleFunc("/", getUsers)
-// 	fmt.Println("Starting server at port 8080")
-// 	log.Fatal(http.ListenAndServe(":8080", nil))
-// }
