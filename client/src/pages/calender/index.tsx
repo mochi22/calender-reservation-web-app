@@ -10,7 +10,7 @@ import axios from 'axios';
 interface EventData {
     id: string;
     title: string;
-    user: string;
+    username: string;
     date: string;
     hour: string;
     createat: string;
@@ -87,6 +87,8 @@ export default function CalendarGfg() {
     };
 
     const editEvent = async (event: EventData) => {
+        console.log("call editEvent function", editingEvent, editingEvent.id);
+        console.log("event:", event);
         try {
             await axios.put(`${root_path}/events/${event.id}`, event);
             fetchEvents(); // イベントデータを再取得
@@ -197,7 +199,8 @@ export default function CalendarGfg() {
                                                 selectedDate={selectedDate}
                                                 editMode
                                                 initialTitle={editingEvent.title}
-                                                initialUser={editingEvent.user}
+                                                initialUser={editingEvent.username}
+                                                eventId={editingEvent.id}
                                             />
                                         )}
                                     </div>

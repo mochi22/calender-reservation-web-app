@@ -4,7 +4,7 @@ import (
     "database/sql"
     "net/http"
     "time"
-	"strconv"
+	// "strconv"
     "log"
 
     "github.com/gin-gonic/gin"
@@ -117,6 +117,7 @@ func getAllEvents(db *sql.DB) ([]Event, error) {
 
 // call put "/events:id" with gin
 func UpdateEvent(c *gin.Context) {
+    log.Print("call update")
     db, err := NewDB()
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -124,15 +125,20 @@ func UpdateEvent(c *gin.Context) {
     }
     defer db.Close()
 
-    id, err := strconv.Atoi(c.Param("id"))
-    log.Print("updateevent id:", id)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
-        return
-    }
+    // if the type of id is int, using this
+    // id, err := strconv.Atoi(c.Param("id"))
+    // if err != nil {
+    //     log.Fatal(err)
+    //     c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+    //     return
+    // }
+
+    // if the type of id is uuid(string), using this
+    // id := c.Param("id")
 
     var event Event
     if err := c.BindJSON(&event); err != nil {
+        log.Print("event:", event)
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
@@ -143,7 +149,8 @@ func UpdateEvent(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusOK, event)
+    c.JSON(http.StatusOK, gin.H{"message": "Event updated successfully"})
+    
 }
 
 func updateEvent(db *sql.DB, event *Event) error {
@@ -164,6 +171,7 @@ func DeleteEvent(c *gin.Context) {
     }
     defer db.Close()
 
+    // if the type of id is int, using this
     // id, err := strconv.Atoi(c.Param("id"))
     // if err != nil {
     //     log.Fatal(err)
@@ -171,6 +179,7 @@ func DeleteEvent(c *gin.Context) {
     //     return
     // }
 
+    // if the type of id is uuid(string), using this
     id := c.Param("id")
 
     if err := deleteEvent(db, id); err != nil {

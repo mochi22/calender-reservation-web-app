@@ -14,6 +14,7 @@ import (
 func NewDB() (*sql.DB, error) {
     err := godotenv.Load(".env") // .envファイルの読み込み
     if err != nil {
+        log.Print("error loading .env file")
 		log.Fatal(err)
         return nil, err
     }

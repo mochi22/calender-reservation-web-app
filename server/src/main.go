@@ -87,7 +87,7 @@ func main() {
     // routing
     r.GET("/events", GetEvents)
     r.POST("/events", CreateEvent)
-    // r.PUT("/events/:id", UpdateEvent)
+    r.PUT("/events/:id", UpdateEvent)
     r.DELETE("/events/:id", DeleteEvent)
 
     r.Run(":8080")

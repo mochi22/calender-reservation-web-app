@@ -10,6 +10,7 @@ interface EventFormProps {
     editMode?: boolean;
     initialTitle?: string;
     initialUser?: string; // 初期ユーザー名の追加
+    eventId?: string;
     disabled?: boolean;
 }
 
@@ -18,9 +19,10 @@ const EventForm: React.FC<EventFormProps> = ({
     onEditEvent,
     selectedHour,
     selectedDate,
-    editMode = false,
-    initialTitle = '',
-    initialUser = '', // 初期ユーザー名のデフォルト値は空文字列
+    editMode = false, // define setting mode or not
+    initialTitle = '', // default event title is ''
+    initialUser = '', // default username is ''
+    eventId = '', // that is eventid
     disabled = false,
 }) => {
     const [eventTitle, setEventTitle] = useState(editMode ? initialTitle : '');
@@ -28,14 +30,21 @@ const EventForm: React.FC<EventFormProps> = ({
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const uuid = uuidv4(); // uuidv4関数を使ってIDを生成
+        let uuid; // uuid変数を宣言
+        if (!(editMode && onEditEvent)) {
+            uuid = uuidv4(); // uuidv4関数を使ってIDを生成
+        } else{
+            uuid = eventId
+        }
         const time_now = new Date();//.toISOString(); // 現在時刻をISO文字列形式で取得
         console.log("ttt:", formatDate(selectedDate));
         const event = {id:uuid, title: eventTitle, username: eventUser, date: formatDate(selectedDate), hour: selectedHour, createat: time_now, updateat: time_now }; // ユーザー名を追加
         console.log("kuraryu log event:", event);
         if (editMode && onEditEvent) {
+            console.log("coll on Edit Event!");
             onEditEvent(event);
         } else {
+            console.log("coll on add Event!");
             onAddEvent(event);
         }
         setEventTitle('');
