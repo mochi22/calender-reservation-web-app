@@ -28,6 +28,8 @@ func NewDB() (*sql.DB, error) {
 
     psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
         host, port, username, password, dbname)
+    
+    log.Print("psqlInfo:", psqlInfo)
 
     // connect db
     db, err := sql.Open("postgres", psqlInfo)
@@ -36,6 +38,7 @@ func NewDB() (*sql.DB, error) {
         return nil, err
     }
 
+    // checking connect
     err = db.Ping()
     if err != nil {
         log.Fatal(err)

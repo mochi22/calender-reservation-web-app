@@ -40,6 +40,8 @@ func main() {
 	if err != nil {
 		log.Print("miss create table!!")
 		log.Fatal(err)
+	} else {
+		log.Print("events table is OK!!!")
 	}
 	defer rows.Close()
 

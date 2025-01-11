@@ -56,8 +56,10 @@ func createEvent(db *sql.DB, event *Event) error {
 
 // call get "/events" with gin
 func GetEvents(c *gin.Context) {
+    log.Print("GET!!!")
     db, err := NewDB()
     if err != nil {
+        log.Printf("Database connection error: %v", err)
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         log.Fatal(err)
         return
@@ -66,6 +68,7 @@ func GetEvents(c *gin.Context) {
 
     events, err := getAllEvents(db)
     if err != nil {
+        log.Printf("Error fetching events: %v", err)
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         log.Fatal(err)
         return

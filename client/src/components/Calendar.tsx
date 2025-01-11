@@ -1,6 +1,4 @@
-// https://qiita.com/mu_tomoya/items/7545bea039e82e483f9e
-
-// // // Filename - index.js
+// components/CalendarComponent.tsx
 import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -17,7 +15,6 @@ interface EventData {
     updateat: string;
 }
 
-// define hour list from 0 to 24 every 1 hour
 const generateHourList = () => {
     const hourList = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -27,20 +24,18 @@ const generateHourList = () => {
     return hourList;
 };
 
-export default function CalendarGfg() {
+const CalendarComponent: React.FC = () => {
     const [value, onChange] = useState<Date>(new Date());
     const [events, setEvents] = useState<EventData[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
 
-    // handle click day in calendar
     const handleClickDay = (value: Date) => {
         setSelectedDate(value);
         console.log("setSelectedDate value:", value);
         setEditingEvent(null);
     };
 
-    // date formatted
     const formatDate = (date: Date | null) => {
         if (!date) {
             return '';
@@ -51,7 +46,6 @@ export default function CalendarGfg() {
         return `${year}-${month}-${day}`;
     };
 
-    // define tile param in react-calendar
     const tileContent = ({ date, view }: { date: Date; view: string }) => {
         if (view === 'month') {
             const formattedDate = formatDate(date);
@@ -64,19 +58,36 @@ export default function CalendarGfg() {
     const root_path = "http://localhost:8080";
 
     const fetchEvents = async () => {
+        console.log("fetch!!!");
         try {
             // get all data from db!
-            const response = await axios.get(`${root_path}/events`);
+            const response = await axios.get(`http://localhost:8080/events`);
+            // const response = await axios.get(`${root_path}/events`);
             if (response.data != null) {
                 setEvents(response.data); //store all data
                 console.log("res:", response.data);
+            } else {
+                console.log("No events data received");
             }
         } catch (error) {
             console.error('Error fetching events:', error);
+            if (error.response) {
+                // サーバーからのレスポンスがある場合
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+                console.error('Response headers:', error.response.headers);
+            } else if (error.request) {
+                // リクエストは送信されたがレスポンスがない場合
+                console.error('No response received:', error.request);
+            } else {
+                // リクエストの設定時にエラーが発生した場合
+                console.error('Error setting up request:', error.message);
+            }
         }
     };
 
     const addEvent = async (event: EventData) => {
+        console.log("ADD!!!");
         try {
             //adding reserved data to db
             await axios.post(`${root_path}/events`, event);
@@ -125,7 +136,7 @@ export default function CalendarGfg() {
             </div>
             <div className="w-2/3 m-4">
                 {selectedDate && (
-                    <div className="bg-green shadow-md rounded-md p-4">
+                    <div className="bg-green-100 shadow-md rounded-md p-4">
                         <h2 className="text-lg font-bold mb-4">{formatDate(selectedDate)}</h2>
                         <ul>
                             {generateHourList().map((hour) => (
@@ -154,7 +165,7 @@ export default function CalendarGfg() {
                                             (event) => event.date === formatDate(selectedDate) && event.hour === hour
                                         ) && (
                                             <div className="flex items-center justify-center">
-                                                <span className="text-gray-500">予定なし</span>
+                                                {/* <span className="text-gray-500">予定なし</span> */}
                                                 <EventForm
                                                     onAddEvent={addEvent}
                                                     selectedHour={hour}
@@ -212,4 +223,6 @@ export default function CalendarGfg() {
             </div>
         </div>
     );
-}
+};
+
+export default CalendarComponent;
